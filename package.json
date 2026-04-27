@@ -1,0 +1,23 @@
+{
+  "name": "dvd-loye-dev",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "docker:build": "export $(cat .env | xargs) && docker build --build-arg PLAUSIBLE_URL --build-arg PLAUSIBLE_DOMAIN -t loye-dev ."
+  },
+  "dependencies": {
+    "@nuxt/ui": "^4.6.1",
+    "nuxt": "^4.4.2",
+    "tailwindcss": "^4.2.2",
+    "vue": "^3.5.32",
+    "vue-router": "^5.0.4"
+  }
+}
