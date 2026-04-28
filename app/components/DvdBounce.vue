@@ -26,6 +26,11 @@ const bounces = ref(0)
 const corners = ref(0)
 const showCornerFlash = ref(false)
 
+const BOUNCE_MILESTONES = new Set([
+  10, 50, 100, 500, 1000, 5000, 10_000, 50_000, 100_000, 500_000, 1_000_000,
+])
+const CORNER_MILESTONES = new Set([1, 5, 10, 25, 50, 100, 250, 500, 1000])
+
 let cornerFlashTimer: ReturnType<typeof setTimeout> | null = null
 let animationFrameId: number | null = null
 let viewportWidth = 0
@@ -95,11 +100,14 @@ function tick() {
     bounces.value++
     // Larger hue jump on bounce makes the color shift more noticeable than the continuous drift
     if (rainbow.value) rainbowHue = (rainbowHue + 55) % 360
+    if (BOUNCE_MILESTONES.has(bounces.value)) useTrackEvent(`${bounces.value} Bounces`)
   }
 
   // Corner hit: both walls touched in the same frame
   if (hitHorizontal && hitVertical) {
     corners.value++
+    if (CORNER_MILESTONES.has(corners.value))
+      useTrackEvent(corners.value === 1 ? 'First Corner' : `${corners.value} Corners`)
     showCornerFlash.value = true
     if (cornerFlashTimer) clearTimeout(cornerFlashTimer)
     cornerFlashTimer = setTimeout(() => {
@@ -139,6 +147,7 @@ onUnmounted(() => {
   if (animationFrameId) cancelAnimationFrame(animationFrameId)
   window.removeEventListener('resize', updateViewport)
   if (cornerFlashTimer) clearTimeout(cornerFlashTimer)
+  if (speedTrackTimer) clearTimeout(speedTrackTimer)
 })
 
 watch(
@@ -148,17 +157,32 @@ watch(
   },
 )
 
+let speedTrackTimer: ReturnType<typeof setTimeout> | null = null
+function trackSpeedDebounced() {
+  if (speedTrackTimer) clearTimeout(speedTrackTimer)
+  speedTrackTimer = setTimeout(() => {
+    useTrackEvent('Change Speed', { props: { value: String(speed.value) } })
+  }, 1000)
+}
+
 function handleDecreaseSpeed() {
-  if (speed.value > 0.25) speed.value = Math.round((speed.value - 0.25) * 100) / 100
+  if (speed.value > 0.25) {
+    speed.value = Math.round((speed.value - 0.25) * 100) / 100
+    trackSpeedDebounced()
+  }
 }
 
 function handleIncreaseSpeed() {
-  if (speed.value < 10) speed.value = Math.round((speed.value + 0.25) * 100) / 100
+  if (speed.value < 10) {
+    speed.value = Math.round((speed.value + 0.25) * 100) / 100
+    trackSpeedDebounced()
+  }
 }
 
 function handleToggleRainbow() {
   rainbow.value = !rainbow.value
   if (!rainbow.value) logoColor.value = getDefaultColor()
+  useTrackEvent('Toggle Rainbow')
 }
 
 function handleSetTheme(theme: 'dark' | 'light') {
