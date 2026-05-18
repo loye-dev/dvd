@@ -5,7 +5,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   vite: {
     optimizeDeps: {
-      include: ['@vue/devtools-core', '@vue/devtools-kit'],
+      include: [
+        '@number-flow/vue',
+        '@plausible-analytics/tracker',
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'canvas-confetti',
+      ],
     },
   },
   modules: ['@nuxt/ui', '@nuxtjs/plausible', '@nuxt/eslint'],
